@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    	
+    <title>Tio Flix Br Player 1</title>
+    <meta content='Veja Os Melhores e mais Recentes Filmes Aqui! no Movie Mill' name='description'/>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+html, body{
+background: #000;
+width: 100%;
+height: 100%;  
+}
+      .container, .video-controls, .video-timer, .options{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+.container{
+  user-select: none;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  aspect-ratio: 16 / 9;
+  position: relative;
+}
+.container.fullscreen{
+  max-width: 100%;
+  width: 100%;
+  height: 100vh;
+  border-radius: 0px;
+}
+.wrapper{
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  opacity: 0;
+  bottom: -15px;
+  transition: all 0.08s ease;
+}
+.container.show-controls .wrapper{
+  opacity: 1;
+  bottom: 0;
+  transition: all 0.13s ease;
+}
+.wrapper::before{
+  content: "";
+  bottom: 0;
+  width: 100%;
+  z-index: -1;
+  position: absolute;
+  height: calc(100% + 35px);
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+}
+.video-timeline{
+  height: 7px;
+  width: 100%;
+  cursor: pointer;
+}
+.video-timeline .progress-area{
+  height: 3px;
+  position: relative;
+  background: rgba(255, 255, 255, 0.6);
+}
+.progress-area span{
+  position: absolute;
+  left: 50%;
+  top: -25px;
+  font-size: 13px;
+  color: #fff;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+.progress-area .progress-bar{
+  width: 0%;
+  height: 100%;
+  position: relative;
+  background: #e91e63;
+}
+.progress-bar::before{
+  content: "";
+  right: 0;
+  top: 50%;
+  height: 13px;
+  width: 13px;
+  position: absolute;
+  border-radius: 50%;
+  background: #e91e63;
+  transform: translateY(-50%);
+}
+.progress-bar::before, .progress-area span{
+  display: none;
+}
+.video-timeline:hover .progress-bar::before,
+.video-timeline:hover .progress-area span{
+  display: block;
+}
+.wrapper .video-controls{
+  padding: 5px 20px 10px;
+}
+.video-controls .options{
+  width: 100%;
+}
+.video-controls .options:first-child{
+  justify-content: flex-start;
+}
+.video-controls .options:last-child{
+  justify-content: flex-end;
+}
+.options button{
+  height: 40px;
+  width: 40px;
+  font-size: 19px;
+  border: none;
+  cursor: pointer;
+  background: none;
+  color: #efefef;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+.options button :where(i, span) {
+  height: 100%;
+  width: 100%;
+  line-height: 40px;
+}
+.options button:hover :where(i, span){
+  color: #fff;
+}
+.options button:active :where(i, span){
+  transform: scale(0.9);
+}
+.options button span{
+  font-size: 23px;
+}
+.options input{
+  height: 4px;
+  margin-left: 3px;
+  max-width: 75px;
+  accent-color: #e91e63;
+}
+.options .video-timer{
+  color: #efefef;
+  margin-left: 15px;
+  font-size: 14px;
+}
+.video-timer .separator{
+  margin: 0 5px;
+  font-size: 16px;
+  font-family: "Open sans";
+}
+.playback-content{
+  display: flex;
+  position: relative;
+}
+.playback-content .speed-options{
+  position: absolute;
+  list-style: none;
+  left: -40px;
+  bottom: 40px;
+  width: 95px;
+  overflow: hidden;
+  opacity: 0;
+  border-radius: 4px;
+  pointer-events: none;
+  background: rgba(24, 31, 43, 0.9);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.13s ease;
+}
+.playback-content .speed-options.show{
+  opacity: 1;
+  pointer-events: auto;
+}
+.speed-options li{
+  cursor: pointer;
+  color: #ededed;
+  font-size: 14px;
+  margin: 2px 0;
+  padding: 5px 0 5px 15px;
+  transition: all 0.1s ease;
+}
+.speed-options li:where(:first-child, :last-child){
+  margin: 0px;
+}
+.speed-options li:hover{
+  background: #dfdfdf;
+}
+.speed-options li.active{
+  color: #fff;
+  background: #e91e63;
+}
+.container video{
+  width: 100%;
+}
+
+@media screen and (max-width: 540px) {
+  .wrapper .video-controls{
+    padding: 3px 10px 7px;
+  }
+  .options input, .progress-area span{
+    display: none!important;
+  }
+  .options button{
+    height: 30px;
+    width: 30px;
+    font-size: 17px;
+  }
+  .options .video-timer{
+    margin-left: 5px;
+  }
+  .video-timer .separator{
+    font-size: 14px;
+    margin: 0 2px;
+  }
+  .options button :where(i, span) {
+    line-height: 30px;
+  }
+  .options button span{
+    font-size: 21px;
+  }
+  .options .video-timer, .progress-area span, .speed-options li{
+    font-size: 12px;
+  }
+  .playback-content .speed-options{
+    width: 75px;
+    left: -30px;
+    bottom: 30px;
+  }
+  .speed-options li{
+    margin: 1px 0;
+    padding: 3px 0 3px 10px;
+  }
+  .right .pic-in-pic{
+    display: none;
+  }
+}
+.opss{
+background-color:#10151d;
+width:100%;
+height:100%;
+z-index:900;
+display:none;
+position:fixed;
+z-index:900;
+justify-content:center;
+align-items:center;
+color:#fff;
+flex-direction:column;
+}
+.opss h3{
+margin-top:20px;
+font-size:30px;
+font-weight:500;
+}
+.opss img{
+width:200px;
+}
+.oprr{
+background-color:#10151d;
+width:100%;
+height:100%;
+z-index:900;
+display:flex;
+position:fixed;
+z-index:900;
+justify-content:center;
+align-items:center;
+color:#fff;
+flex-direction:column;
+}
+.preload-container {
+  display: flex;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #10151d;
+  overflow-y: hidden;
+  flex-direction: column;
+}
+.preloadC{
+      width: 100%;
+  height: 100%;
+   flex-direction: column;
+   display:flex;
+justify-content: center;
+align-items: center;
+      }
+.preload-spinner {
+  margin-left:55px;
+  transform: translate(-50%, -50%);
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #e91e63;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+.preload-message {
+  margin-left:78px;
+  transform: translate(-50%, -50%);
+  color: #f3f3f3;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+.psload{
+background-color:#10151d;
+width:100%;
+height:100%;
+z-index:900;
+display:flex;
+position:fixed;
+z-index:900;
+justify-content:center;
+align-items:center;
+color:#fff;
+flex-direction:column;
+}
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.fade-out {
+  animation: fadeOut 0.5s ease-in-out forwards;
+}
+
+   </style>
+  </head>
+  <body>
+
+<div class="psload">
+<div class="opss">
+<img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhoV-s5RB5NZvyHw8bIT-k5NpsL20PJ-N-iAAFH8jmnHmMZT-J83HfN9zlxvU_SbgtNVIVLX6-PUHe5kMoBZq0MEjrx0WA6dqiH-m04kP1a77-XnD3VjWhsg10Ag84D8w8rOGQZq3unJLL5mDyER6v94pGi_XwsMvsvM5CTALJkqNh6hLj3bh6O-yKRGwLE/s1600/20230704_000002.png"/>
+<h3>Ops! Filme Indisponível</h3>
+</div>
+<div class="oprr">
+ <div class='preload-container' id='preload'>
+          <div class='preloadC'>
+  <div class='preload-spinner'></div>
+  <p class='preload-message'>Loading</p>
+  </div>
+</div>
+</div>
+</div>
+    <div class="container show-controls">
+        <div class="wrapper">
+            <div class="video-timeline">
+                <div class="progress-area">
+                    <span>00:00</span>
+                    <div class="progress-bar"></div>
+                </div>
+            </div>
+            <ul class="video-controls">
+                <li class="options left">
+                    <button class="volume"><i class="fa-solid fa-volume-high"></i></button>
+                    <input type="range" min="0" max="1" step="any">
+                    <div class="video-timer">
+                        <p class="current-time">00:00</p>
+                        <p class="separator"> / </p>
+                        <p class="video-duration">00:00</p>
+                    </div>
+                </li>
+                <li class="options center">
+                    <button class="skip-backward"><i class="fas fa-backward"></i></button>
+                    <button class="play-pause"><i class="fas fa-play"></i></button>
+                    <button class="skip-forward"><i class="fas fa-forward"></i></button>
+                </li>
+                <li class="options right">
+                    <div class="playback-content">
+                        <button class="playback-speed">
+<span class="material-symbols-rounded">slow_motion_video</span></button>
+                        <ul class="speed-options">
+                            <li data-speed="2">2x</li>
+                            <li data-speed="1.5">1.5x</li>
+                            <li data-speed="1" class="active">Normal</li>
+                            <li data-speed="0.75">0.75x</li>
+                            <li data-speed="0.5">0.5x</li>
+                        </ul>
+                    </div>
+                    <button class="pic-in-pic"><span class="material-icons">picture_in_picture_alt</span></button>
+                    <button class="fullscreen"><i class="fa-solid fa-expand"></i></button>
+                </li>
+            </ul>
+        </div>
+        <video id="video-id"></video>
+    </div>
+    <script>
+var _0x4c37=["\x68\x74\x74\x70\x73\x3A\x2F\x2F\x62\x6C\x6F\x67\x67\x65\x72\x2E\x67\x6F\x6F\x67\x6C\x65\x75\x73\x65\x72\x63\x6F\x6E\x74\x65\x6E\x74\x2E\x63\x6F\x6D\x2F\x69\x6D\x67\x2F\x62\x2F\x52\x32\x39\x76\x5A\x32\x78\x6C\x2F\x41\x56\x76\x58\x73\x45\x68\x5A\x76\x6B\x61\x58\x7A\x30\x79\x63\x72\x49\x76\x76\x6F\x58\x47\x68\x78\x30\x5A\x31\x46\x6A\x32\x6F\x59\x64\x62\x2D\x48\x76\x70\x6D\x77\x30\x64\x6D\x58\x6A\x41\x4E\x78\x36\x34\x71\x6A\x6D\x58\x66\x79\x44\x34\x66\x58\x52\x36\x39\x35\x41\x71\x73\x36\x6D\x77\x50\x4E\x6C\x32\x4C\x2D\x4B\x54\x61\x6E\x43\x4F\x41\x4F\x44\x58\x6F\x4C\x62\x53\x6D\x4F\x4B\x33\x34\x70\x41\x6B\x70\x36\x38\x58\x64\x49\x6E\x33\x37\x75\x39\x6D\x48\x45\x46\x79\x78\x48\x79\x38\x4F\x2D\x32\x52\x4D\x4E\x66\x31\x62\x4F\x30\x48\x65\x41\x64\x6F\x54\x39\x6F\x44\x42\x43\x4B\x36\x71\x6F\x30\x4A\x36\x77\x47\x30\x6C\x54\x4C\x36\x71\x4E\x37\x79\x6F\x52\x4A\x45\x4C\x52\x77\x6A\x72\x6C\x47\x6A\x4F\x74\x6A\x41\x32\x31\x67\x55\x77\x64\x54\x5A\x49\x31\x53\x33\x7A\x42\x63\x65\x32\x2F\x73\x31\x36\x30\x30\x2F\x63\x61\x72\x72\x65\x74\x69\x6C\x68\x61\x2E\x70\x6E\x67","\x69\x63\x6F\x6E","\x31\x36\x78\x31\x36","\x69\x6D\x61\x67\x65\x2F\x70\x6E\x67","\x33\x32\x78\x33\x32","\x34\x38\x78\x34\x38","\x36\x34\x78\x36\x34","\x31\x32\x38\x78\x31\x32\x38","\x61\x70\x70\x6C\x65\x2D\x74\x6F\x75\x63\x68\x2D\x69\x63\x6F\x6E","\x31\x35\x32\x78\x31\x35\x32","\x31\x36\x37\x78\x31\x36\x37","\x31\x38\x30\x78\x31\x38\x30","\x31\x39\x32\x78\x31\x39\x32","\x68\x65\x61\x64","\x67\x65\x74\x45\x6C\x65\x6D\x65\x6E\x74\x73\x42\x79\x54\x61\x67\x4E\x61\x6D\x65","\x6C\x65\x6E\x67\x74\x68","\x6C\x69\x6E\x6B","\x63\x72\x65\x61\x74\x65\x45\x6C\x65\x6D\x65\x6E\x74","\x68\x72\x65\x66","\x72\x65\x6C","\x73\x69\x7A\x65\x73","\x74\x79\x70\x65","\x61\x70\x70\x65\x6E\x64\x43\x68\x69\x6C\x64","\x73\x65\x61\x72\x63\x68","\x6C\x6F\x63\x61\x74\x69\x6F\x6E","\x76\x64","\x67\x65\x74","\x63\x6F\x6C\x6F\x72","\x23","\x23\x66\x66\x66\x66\x66\x66","\x6E\x6F\x6D\x65","\x74\x69\x74\x6C\x65","\x73\x74\x73","\x6F\x66\x66","\x45\x73\x73\x65\x20\x46\x69\x6C\x6D\x65\x20\x65\x73\x74\xE1\x20\x4F\x66\x66","\x68\x74\x74\x70\x73\x3A\x2F\x2F\x6D\x6F\x76\x69\x65\x6D\x69\x6C\x2E\x62\x6C\x6F\x67\x73\x70\x6F\x74\x2E\x63\x6F\x6D","\x68\x74\x74\x70\x73\x3A\x2F\x2F\x73\x63\x72\x69\x70\x74\x2E\x67\x6F\x6F\x67\x6C\x65\x2E\x63\x6F\x6D\x2F\x6D\x61\x63\x72\x6F\x73\x2F\x73\x2F\x41\x4B\x66\x79\x63\x62\x79\x72\x55\x74\x2D\x55\x4A\x4E\x4B\x66\x41\x47\x4A\x37\x63\x48\x33\x74\x65\x53\x6F\x62\x39\x5A\x4E\x61\x46\x37\x34\x58\x33\x42\x6B\x75\x5A\x37\x51\x57\x67\x41\x74\x6C\x7A\x32\x50\x31\x6F\x4E\x41\x46\x72\x33\x4E\x46\x53\x31\x49\x6C\x37\x46\x54\x4D\x71\x67\x45\x50\x2F\x65\x78\x65\x63","\x68\x74\x74\x70\x73\x3A\x2F\x2F\x61\x70\x69\x2E\x74\x68\x65\x6D\x6F\x76\x69\x65\x64\x62\x2E\x6F\x72\x67\x2F\x33\x2F","\x64\x64\x38\x62\x39\x62\x30\x62\x61\x31\x36\x61\x37\x61\x32\x65\x31\x36\x37\x36\x31\x35\x63\x36\x64\x65\x30\x64\x39\x39\x61\x30","\x46\x75\x6E\x63\x74\x69\x6F\x6E","\x45\x78\x70\x6F\x72\x74\x4A\x53\x4F\x4E","\x61\x70\x70\x65\x6E\x64","\x70\x61\x67\x65","\x46\x69\x6C\x6D\x65\x73","\x45\x72\x72\x6F\x20\x61\x6F\x20\x63\x61\x72\x72\x65\x67\x61\x72\x20\x6F\x20\x4A\x53\x4F\x4E\x3A","\x6C\x6F\x67","\x63\x61\x74\x63\x68","\x49\x44","\x66\x69\x6E\x64","\x73\x74\x72\x65\x61\x6D","\x6D\x70\x34","\x70\x6C\x61\x79\x65\x72","\x64\x72\x69\x76\x65","\x68\x74\x74\x70\x73\x3A\x2F\x2F\x77\x77\x77\x2E\x67\x6F\x6F\x67\x6C\x65\x61\x70\x69\x73\x2E\x63\x6F\x6D\x2F\x64\x72\x69\x76\x65\x2F\x76\x33\x2F\x66\x69\x6C\x65\x73\x2F","\x3F\x6B\x65\x79\x3D\x41\x49\x7A\x61\x53\x79\x44\x59\x35\x5F\x69\x56\x2D\x39\x48\x48\x6D\x32\x75\x33\x62\x59\x65\x66\x35\x73\x5A\x35\x4B\x63\x35\x4A\x64\x5F\x34\x77\x65\x39\x73\x26\x61\x6C\x74\x3D\x6D\x65\x64\x69\x61","\x76\x69\x64\x65\x6F\x2D\x69\x64","\x67\x65\x74\x45\x6C\x65\x6D\x65\x6E\x74\x42\x79\x49\x64","\x69\x6E\x6E\x65\x72\x48\x54\x4D\x4C","\x3C\x73\x6F\x75\x72\x63\x65\x20\x73\x72\x63\x3D\x22","\x22\x20\x74\x79\x70\x65\x3D\x22\x76\x69\x64\x65\x6F\x2F\x6D\x70\x34\x22\x3E","\x6F\x6E\x6C\x6F\x61\x64\x65\x64\x64\x61\x74\x61","\x2E\x70\x73\x6C\x6F\x61\x64","\x71\x75\x65\x72\x79\x53\x65\x6C\x65\x63\x74\x6F\x72","\x66\x61\x64\x65\x2D\x6F\x75\x74","\x61\x64\x64","\x63\x6C\x61\x73\x73\x4C\x69\x73\x74","\x61\x6E\x69\x6D\x61\x74\x69\x6F\x6E\x65\x6E\x64","\x64\x69\x73\x70\x6C\x61\x79","\x73\x74\x79\x6C\x65","\x6E\x6F\x6E\x65","\x61\x64\x64\x45\x76\x65\x6E\x74\x4C\x69\x73\x74\x65\x6E\x65\x72","\x45\x6C\x65\x6D\x65\x6E\x74\x6F\x20\x63\x6F\x6D\x20\x61\x20\x63\x6C\x61\x73\x73\x65\x20\x27\x70\x73\x6C\x6F\x61\x64\x27\x20\x6E\xE3\x6F\x20\x65\x6E\x63\x6F\x6E\x74\x72\x61\x64\x6F\x2E","\x45\x72\x72\x6F\x20\x61\x6F\x20\x6F\x62\x74\x65\x72\x20\x6F\x20\x74\xED\x74\x75\x6C\x6F\x20\x65\x20\x6F\x20\x62\x61\x6E\x6E\x65\x72\x20\x64\x6F\x20\x66\x69\x6C\x6D\x65\x3A","\x62\x61\x63\x6B\x64\x72\x6F\x70\x5F\x70\x61\x74\x68","\x68\x74\x74\x70\x73\x3A\x2F\x2F\x69\x6D\x61\x67\x65\x2E\x74\x6D\x64\x62\x2E\x6F\x72\x67\x2F\x74\x2F\x70\x2F\x6F\x72\x69\x67\x69\x6E\x61\x6C","","\x70\x6F\x73\x74\x65\x72","\x73\x65\x74\x41\x74\x74\x72\x69\x62\x75\x74\x65","\x2E\x6F\x70\x73\x73","\x2E\x6F\x70\x72\x72","\x66\x6C\x65\x78","\x45\x6C\x65\x6D\x65\x6E\x74\x6F\x73\x20\x27\x6F\x70\x73\x73\x27\x20\x6F\x75\x20\x27\x6F\x70\x72\x72\x27\x20\x6E\xE3\x6F\x20\x65\x6E\x63\x6F\x6E\x74\x72\x61\x64\x6F\x73\x2E","\x74\x68\x65\x6E","\x6A\x73\x6F\x6E","\x6D\x6F\x76\x69\x65\x2F","\x3F\x61\x70\x69\x5F\x6B\x65\x79\x3D","\x26\x6C\x61\x6E\x67\x75\x61\x67\x65\x3D\x70\x74\x2D\x42\x52","\x6D\x70\x34\x55\x72\x6C","\x67\x64\x49\x44","\x46\x69\x6C\x6D\x65\x20\x6E\xE3\x6F\x20\x65\x6E\x63\x6F\x6E\x74\x72\x61\x64\x6F\x21","\x50\x4F\x53\x54","\x2E\x63\x6F\x6E\x74\x61\x69\x6E\x65\x72","\x76\x69\x64\x65\x6F","\x2E\x76\x69\x64\x65\x6F\x2D\x74\x69\x6D\x65\x6C\x69\x6E\x65","\x2E\x70\x72\x6F\x67\x72\x65\x73\x73\x2D\x62\x61\x72","\x2E\x76\x6F\x6C\x75\x6D\x65\x20\x69","\x2E\x6C\x65\x66\x74\x20\x69\x6E\x70\x75\x74","\x2E\x63\x75\x72\x72\x65\x6E\x74\x2D\x74\x69\x6D\x65","\x2E\x76\x69\x64\x65\x6F\x2D\x64\x75\x72\x61\x74\x69\x6F\x6E","\x2E\x73\x6B\x69\x70\x2D\x62\x61\x63\x6B\x77\x61\x72\x64\x20\x69","\x2E\x73\x6B\x69\x70\x2D\x66\x6F\x72\x77\x61\x72\x64\x20\x69","\x2E\x70\x6C\x61\x79\x2D\x70\x61\x75\x73\x65\x20\x69","\x2E\x70\x6C\x61\x79\x62\x61\x63\x6B\x2D\x73\x70\x65\x65\x64\x20\x73\x70\x61\x6E","\x2E\x73\x70\x65\x65\x64\x2D\x6F\x70\x74\x69\x6F\x6E\x73","\x2E\x70\x69\x63\x2D\x69\x6E\x2D\x70\x69\x63\x20\x73\x70\x61\x6E","\x2E\x66\x75\x6C\x6C\x73\x63\x72\x65\x65\x6E\x20\x69","\x70\x61\x75\x73\x65\x64","\x73\x68\x6F\x77\x2D\x63\x6F\x6E\x74\x72\x6F\x6C\x73","\x72\x65\x6D\x6F\x76\x65","\x6D\x6F\x75\x73\x65\x6D\x6F\x76\x65","\x66\x6C\x6F\x6F\x72","\x30","\x3A","\x63\x6C\x69\x65\x6E\x74\x57\x69\x64\x74\x68","\x6F\x66\x66\x73\x65\x74\x58","\x64\x75\x72\x61\x74\x69\x6F\x6E","\x73\x70\x61\x6E","\x6C\x65\x66\x74","\x70\x78","\x69\x6E\x6E\x65\x72\x54\x65\x78\x74","\x63\x6C\x69\x63\x6B","\x63\x75\x72\x72\x65\x6E\x74\x54\x69\x6D\x65","\x74\x69\x6D\x65\x75\x70\x64\x61\x74\x65","\x74\x61\x72\x67\x65\x74","\x77\x69\x64\x74\x68","\x25","\x6C\x6F\x61\x64\x65\x64\x64\x61\x74\x61","\x66\x61\x2D\x76\x6F\x6C\x75\x6D\x65\x2D\x68\x69\x67\x68","\x63\x6F\x6E\x74\x61\x69\x6E\x73","\x76\x6F\x6C\x75\x6D\x65","\x66\x61\x2D\x76\x6F\x6C\x75\x6D\x65\x2D\x78\x6D\x61\x72\x6B","\x72\x65\x70\x6C\x61\x63\x65","\x76\x61\x6C\x75\x65","\x69\x6E\x70\x75\x74","\x70\x6C\x61\x79\x62\x61\x63\x6B\x52\x61\x74\x65","\x73\x70\x65\x65\x64","\x64\x61\x74\x61\x73\x65\x74","\x61\x63\x74\x69\x76\x65","\x2E\x61\x63\x74\x69\x76\x65","\x66\x6F\x72\x45\x61\x63\x68","\x6C\x69","\x71\x75\x65\x72\x79\x53\x65\x6C\x65\x63\x74\x6F\x72\x41\x6C\x6C","\x74\x61\x67\x4E\x61\x6D\x65","\x53\x50\x41\x4E","\x63\x6C\x61\x73\x73\x4E\x61\x6D\x65","\x6D\x61\x74\x65\x72\x69\x61\x6C\x2D\x73\x79\x6D\x62\x6F\x6C\x73\x2D\x72\x6F\x75\x6E\x64\x65\x64","\x73\x68\x6F\x77","\x66\x75\x6C\x6C\x73\x63\x72\x65\x65\x6E","\x74\x6F\x67\x67\x6C\x65","\x66\x75\x6C\x6C\x73\x63\x72\x65\x65\x6E\x45\x6C\x65\x6D\x65\x6E\x74","\x66\x61\x2D\x63\x6F\x6D\x70\x72\x65\x73\x73","\x66\x61\x2D\x65\x78\x70\x61\x6E\x64","\x65\x78\x69\x74\x46\x75\x6C\x6C\x73\x63\x72\x65\x65\x6E","\x72\x65\x71\x75\x65\x73\x74\x46\x75\x6C\x6C\x73\x63\x72\x65\x65\x6E","\x72\x65\x71\x75\x65\x73\x74\x50\x69\x63\x74\x75\x72\x65\x49\x6E\x50\x69\x63\x74\x75\x72\x65","\x70\x6C\x61\x79","\x66\x61\x2D\x70\x6C\x61\x79","\x66\x61\x2D\x70\x61\x75\x73\x65","\x70\x61\x75\x73\x65","\x6D\x6F\x75\x73\x65\x64\x6F\x77\x6E","\x6D\x6F\x75\x73\x65\x75\x70","\x72\x65\x6D\x6F\x76\x65\x45\x76\x65\x6E\x74\x4C\x69\x73\x74\x65\x6E\x65\x72"];function addFavicons(){var _0x8e2bx2=[{href:_0x4c37[0],rel:_0x4c37[1],sizes:_0x4c37[2],type:_0x4c37[3]},{href:_0x4c37[0],rel:_0x4c37[1],sizes:_0x4c37[4],type:_0x4c37[3]},{href:_0x4c37[0],rel:_0x4c37[1],sizes:_0x4c37[5],type:_0x4c37[3]},{href:_0x4c37[0],rel:_0x4c37[1],sizes:_0x4c37[6],type:_0x4c37[3]},{href:_0x4c37[0],rel:_0x4c37[1],sizes:_0x4c37[7],type:_0x4c37[3]},{href:_0x4c37[0],rel:_0x4c37[8],sizes:_0x4c37[9]},{href:_0x4c37[0],rel:_0x4c37[8],sizes:_0x4c37[10]},{href:_0x4c37[0],rel:_0x4c37[8],sizes:_0x4c37[11]},{href:_0x4c37[0],rel:_0x4c37[1],sizes:_0x4c37[12],type:_0x4c37[3]}];var _0x8e2bx3=document[_0x4c37[14]](_0x4c37[13])[0];for(var _0x8e2bx4=0;_0x8e2bx4< _0x8e2bx2[_0x4c37[15]];_0x8e2bx4++){var _0x8e2bx5=document[_0x4c37[17]](_0x4c37[16]);_0x8e2bx5[_0x4c37[18]]= _0x8e2bx2[_0x8e2bx4][_0x4c37[18]];_0x8e2bx5[_0x4c37[19]]= _0x8e2bx2[_0x8e2bx4][_0x4c37[19]];_0x8e2bx5[_0x4c37[20]]= _0x8e2bx2[_0x8e2bx4][_0x4c37[20]];_0x8e2bx5[_0x4c37[21]]= _0x8e2bx2[_0x8e2bx4][_0x4c37[21]];_0x8e2bx3[_0x4c37[22]](_0x8e2bx5)}}addFavicons();function getMovieIDFromURL(){const _0x8e2bx7= new URLSearchParams(window[_0x4c37[24]][_0x4c37[23]]);return _0x8e2bx7[_0x4c37[26]](_0x4c37[25])}function getPrimaryColorFromVideo(_0x8e2bx9){if(_0x8e2bx9&& _0x8e2bx9[_0x4c37[27]]){return _0x4c37[28]+ _0x8e2bx9[_0x4c37[27]]};return _0x4c37[29]}function setDocumentTitle(_0x8e2bx9){if(_0x8e2bx9&& _0x8e2bx9[_0x4c37[30]]){document[_0x4c37[31]]= _0x8e2bx9[_0x4c37[30]]}}function checkVideoStatus(_0x8e2bx9){if(_0x8e2bx9&& _0x8e2bx9[_0x4c37[32]]=== _0x4c37[33]){alert(_0x4c37[34]);window[_0x4c37[24]][_0x4c37[18]]= _0x4c37[35]}}const jsonUrl=_0x4c37[36];const apiBaseUrl=_0x4c37[37];const apiKey=_0x4c37[38];const formData= new FormData();formData[_0x4c37[41]](_0x4c37[39],_0x4c37[40]);formData[_0x4c37[41]](_0x4c37[42],_0x4c37[43]);fetch(jsonUrl,{method:_0x4c37[90],body:formData})[_0x4c37[82]]((_0x8e2bx1d)=>{return _0x8e2bx1d[_0x4c37[83]]()})[_0x4c37[82]]((_0x8e2bx11)=>{const _0x8e2bx12=getMovieIDFromURL();const _0x8e2bx13=_0x8e2bx11[_0x4c37[48]]((_0x8e2bx14)=>{return _0x8e2bx14[_0x4c37[47]].toString()=== _0x8e2bx12});if(_0x8e2bx13){checkVideoStatus(_0x8e2bx13);let _0x8e2bx15;if(_0x8e2bx13[_0x4c37[49]]=== _0x4c37[50]){_0x8e2bx15= _0x8e2bx13[_0x4c37[51]]}else {if(_0x8e2bx13[_0x4c37[49]]=== _0x4c37[52]){_0x8e2bx15= `${_0x4c37[53]}${_0x8e2bx13[_0x4c37[51]]}${_0x4c37[54]}`}};const _0x8e2bx16=document[_0x4c37[56]](_0x4c37[55]);_0x8e2bx16[_0x4c37[57]]= `${_0x4c37[58]}${_0x8e2bx15}${_0x4c37[59]}`;_0x8e2bx16[_0x4c37[60]]= function(){const _0x8e2bx17=document[_0x4c37[62]](_0x4c37[61]);if(_0x8e2bx17){_0x8e2bx17[_0x4c37[65]][_0x4c37[64]](_0x4c37[63]);_0x8e2bx17[_0x4c37[70]](_0x4c37[66],function(){_0x8e2bx17[_0x4c37[68]][_0x4c37[67]]= _0x4c37[69]})}else {console[_0x4c37[45]](_0x4c37[71])}};fetch(`${_0x4c37[75]}${apiBaseUrl}${_0x4c37[84]}${_0x8e2bx13[_0x4c37[47]]}${_0x4c37[85]}${apiKey}${_0x4c37[86]}`)[_0x4c37[82]]((_0x8e2bx1d)=>{return _0x8e2bx1d[_0x4c37[83]]()})[_0x4c37[82]]((_0x8e2bx11)=>{const _0x8e2bx18=_0x8e2bx11[_0x4c37[31]];const _0x8e2bx19=_0x8e2bx11[_0x4c37[73]];const _0x8e2bx1a=`${_0x4c37[74]}${_0x8e2bx19}${_0x4c37[75]}`;document[_0x4c37[31]]= _0x8e2bx18;_0x8e2bx16[_0x4c37[77]](_0x4c37[76],_0x8e2bx1a);const _0x8e2bx1b=document[_0x4c37[62]](_0x4c37[78]);const _0x8e2bx1c=document[_0x4c37[62]](_0x4c37[79]);if(_0x8e2bx1b&& _0x8e2bx1c){if(_0x8e2bx1b[_0x4c37[68]][_0x4c37[67]]!== _0x4c37[69]&& _0x8e2bx1b[_0x4c37[68]][_0x4c37[67]]!== _0x4c37[75]){if(_0x8e2bx13){_0x8e2bx1c[_0x4c37[68]][_0x4c37[67]]= _0x4c37[80]}else {_0x8e2bx1c[_0x4c37[68]][_0x4c37[67]]= _0x4c37[69]}}else {if(_0x8e2bx13){_0x8e2bx1c[_0x4c37[68]][_0x4c37[67]]= _0x4c37[75]}else {_0x8e2bx1c[_0x4c37[68]][_0x4c37[67]]= _0x4c37[80]}}}else {console[_0x4c37[45]](_0x4c37[81])}})[_0x4c37[46]]((_0x8e2bx10)=>{console[_0x4c37[45]](_0x4c37[72],_0x8e2bx10)});setDocumentTitle(_0x8e2bx13);delete _0x8e2bx13[_0x4c37[87]];delete _0x8e2bx13[_0x4c37[88]]}else {console[_0x4c37[45]](_0x4c37[89]);const _0x8e2bx1b=document[_0x4c37[62]](_0x4c37[78]);const _0x8e2bx1c=document[_0x4c37[62]](_0x4c37[79]);if(_0x8e2bx1b&& _0x8e2bx1c){_0x8e2bx1b[_0x4c37[68]][_0x4c37[67]]= _0x4c37[80];_0x8e2bx1c[_0x4c37[68]][_0x4c37[67]]= _0x4c37[69]}else {console[_0x4c37[45]](_0x4c37[81])}}})[_0x4c37[46]]((_0x8e2bx10)=>{console[_0x4c37[45]](_0x4c37[44],_0x8e2bx10)});const container=document[_0x4c37[62]](_0x4c37[91]),mainVideo=container[_0x4c37[62]](_0x4c37[92]),videoTimeline=container[_0x4c37[62]](_0x4c37[93]),progressBar=container[_0x4c37[62]](_0x4c37[94]),volumeBtn=container[_0x4c37[62]](_0x4c37[95]),volumeSlider=container[_0x4c37[62]](_0x4c37[96]);currentVidTime= container[_0x4c37[62]](_0x4c37[97]),videoDuration= container[_0x4c37[62]](_0x4c37[98]),skipBackward= container[_0x4c37[62]](_0x4c37[99]),skipForward= container[_0x4c37[62]](_0x4c37[100]),playPauseBtn= container[_0x4c37[62]](_0x4c37[101]),speedBtn= container[_0x4c37[62]](_0x4c37[102]),speedOptions= container[_0x4c37[62]](_0x4c37[103]),pipBtn= container[_0x4c37[62]](_0x4c37[104]),fullScreenBtn= container[_0x4c37[62]](_0x4c37[105]);let timer;const hideControls=()=>{if(mainVideo[_0x4c37[106]]){return};timer= setTimeout(()=>{container[_0x4c37[65]][_0x4c37[108]](_0x4c37[107])},3000)};hideControls();container[_0x4c37[70]](_0x4c37[109],()=>{container[_0x4c37[65]][_0x4c37[64]](_0x4c37[107]);clearTimeout(timer);hideControls()});const formatTime=(_0x8e2bx27)=>{let _0x8e2bx28=Math[_0x4c37[110]](_0x8e2bx27% 60),_0x8e2bx29=Math[_0x4c37[110]](_0x8e2bx27/ 60)% 60,_0x8e2bx2a=Math[_0x4c37[110]](_0x8e2bx27/ 3600);_0x8e2bx28= _0x8e2bx28< 10?`${_0x4c37[111]}${_0x8e2bx28}${_0x4c37[75]}`:_0x8e2bx28;_0x8e2bx29= _0x8e2bx29< 10?`${_0x4c37[111]}${_0x8e2bx29}${_0x4c37[75]}`:_0x8e2bx29;_0x8e2bx2a= _0x8e2bx2a< 10?`${_0x4c37[111]}${_0x8e2bx2a}${_0x4c37[75]}`:_0x8e2bx2a;if(_0x8e2bx2a== 0){return `${_0x4c37[75]}${_0x8e2bx29}${_0x4c37[112]}${_0x8e2bx28}${_0x4c37[75]}`};return `${_0x4c37[75]}${_0x8e2bx2a}${_0x4c37[112]}${_0x8e2bx29}${_0x4c37[112]}${_0x8e2bx28}${_0x4c37[75]}`};videoTimeline[_0x4c37[70]](_0x4c37[109],(_0x8e2bx2b)=>{let _0x8e2bx2c=videoTimeline[_0x4c37[113]];let _0x8e2bx2d=_0x8e2bx2b[_0x4c37[114]];let _0x8e2bx2e=Math[_0x4c37[110]]((_0x8e2bx2d/ _0x8e2bx2c)* mainVideo[_0x4c37[115]]);const _0x8e2bx2f=videoTimeline[_0x4c37[62]](_0x4c37[116]);_0x8e2bx2d= _0x8e2bx2d< 20?20:(_0x8e2bx2d> _0x8e2bx2c- 20)?_0x8e2bx2c- 20:_0x8e2bx2d;_0x8e2bx2f[_0x4c37[68]][_0x4c37[117]]= `${_0x4c37[75]}${_0x8e2bx2d}${_0x4c37[118]}`;_0x8e2bx2f[_0x4c37[119]]= formatTime(_0x8e2bx2e)});videoTimeline[_0x4c37[70]](_0x4c37[120],(_0x8e2bx2b)=>{let _0x8e2bx2c=videoTimeline[_0x4c37[113]];mainVideo[_0x4c37[121]]= (_0x8e2bx2b[_0x4c37[114]]/ _0x8e2bx2c)* mainVideo[_0x4c37[115]]});mainVideo[_0x4c37[70]](_0x4c37[122],(_0x8e2bx2b)=>{let {currentTime,duration}=_0x8e2bx2b[_0x4c37[123]];let _0x8e2bx2e=(currentTime/ duration)* 100;progressBar[_0x4c37[68]][_0x4c37[124]]= `${_0x4c37[75]}${_0x8e2bx2e}${_0x4c37[125]}`;currentVidTime[_0x4c37[119]]= formatTime(currentTime)});mainVideo[_0x4c37[70]](_0x4c37[126],()=>{videoDuration[_0x4c37[119]]= formatTime(mainVideo[_0x4c37[115]])});const draggableProgressBar=(_0x8e2bx2b)=>{let _0x8e2bx2c=videoTimeline[_0x4c37[113]];progressBar[_0x4c37[68]][_0x4c37[124]]= `${_0x4c37[75]}${_0x8e2bx2b[_0x4c37[114]]}${_0x4c37[118]}`;mainVideo[_0x4c37[121]]= (_0x8e2bx2b[_0x4c37[114]]/ _0x8e2bx2c)* mainVideo[_0x4c37[115]];currentVidTime[_0x4c37[119]]= formatTime(mainVideo[_0x4c37[121]])};volumeBtn[_0x4c37[70]](_0x4c37[120],()=>{if(!volumeBtn[_0x4c37[65]][_0x4c37[128]](_0x4c37[127])){mainVideo[_0x4c37[129]]= 0.5;volumeBtn[_0x4c37[65]][_0x4c37[131]](_0x4c37[130],_0x4c37[127])}else {mainVideo[_0x4c37[129]]= 0.0;volumeBtn[_0x4c37[65]][_0x4c37[131]](_0x4c37[127],_0x4c37[130])};volumeSlider[_0x4c37[132]]= mainVideo[_0x4c37[129]]});volumeSlider[_0x4c37[70]](_0x4c37[133],(_0x8e2bx2b)=>{mainVideo[_0x4c37[129]]= _0x8e2bx2b[_0x4c37[123]][_0x4c37[132]];if(_0x8e2bx2b[_0x4c37[123]][_0x4c37[132]]== 0){return volumeBtn[_0x4c37[65]][_0x4c37[131]](_0x4c37[127],_0x4c37[130])};volumeBtn[_0x4c37[65]][_0x4c37[131]](_0x4c37[130],_0x4c37[127])});speedOptions[_0x4c37[141]](_0x4c37[140])[_0x4c37[139]]((_0x8e2bx31)=>{_0x8e2bx31[_0x4c37[70]](_0x4c37[120],()=>{mainVideo[_0x4c37[134]]= _0x8e2bx31[_0x4c37[136]][_0x4c37[135]];speedOptions[_0x4c37[62]](_0x4c37[138])[_0x4c37[65]][_0x4c37[108]](_0x4c37[137]);_0x8e2bx31[_0x4c37[65]][_0x4c37[64]](_0x4c37[137])})});document[_0x4c37[70]](_0x4c37[120],(_0x8e2bx2b)=>{if(_0x8e2bx2b[_0x4c37[123]][_0x4c37[142]]!== _0x4c37[143]|| _0x8e2bx2b[_0x4c37[123]][_0x4c37[144]]!== _0x4c37[145]){speedOptions[_0x4c37[65]][_0x4c37[108]](_0x4c37[146])}});fullScreenBtn[_0x4c37[70]](_0x4c37[120],()=>{container[_0x4c37[65]][_0x4c37[148]](_0x4c37[147]);if(document[_0x4c37[149]]){fullScreenBtn[_0x4c37[65]][_0x4c37[131]](_0x4c37[150],_0x4c37[151]);return document[_0x4c37[152]]()};fullScreenBtn[_0x4c37[65]][_0x4c37[131]](_0x4c37[151],_0x4c37[150]);container[_0x4c37[153]]()});speedBtn[_0x4c37[70]](_0x4c37[120],()=>{return speedOptions[_0x4c37[65]][_0x4c37[148]](_0x4c37[146])});pipBtn[_0x4c37[70]](_0x4c37[120],()=>{return mainVideo[_0x4c37[154]]()});skipBackward[_0x4c37[70]](_0x4c37[120],()=>{return mainVideo[_0x4c37[121]]-= 5});skipForward[_0x4c37[70]](_0x4c37[120],()=>{return mainVideo[_0x4c37[121]]+= 5});mainVideo[_0x4c37[70]](_0x4c37[155],()=>{return playPauseBtn[_0x4c37[65]][_0x4c37[131]](_0x4c37[156],_0x4c37[157])});mainVideo[_0x4c37[70]](_0x4c37[158],()=>{return playPauseBtn[_0x4c37[65]][_0x4c37[131]](_0x4c37[157],_0x4c37[156])});playPauseBtn[_0x4c37[70]](_0x4c37[120],()=>{return mainVideo[_0x4c37[106]]?mainVideo[_0x4c37[155]]():mainVideo[_0x4c37[158]]()});videoTimeline[_0x4c37[70]](_0x4c37[159],()=>{return videoTimeline[_0x4c37[70]](_0x4c37[109],draggableProgressBar)});document[_0x4c37[70]](_0x4c37[160],()=>{return videoTimeline[_0x4c37[161]](_0x4c37[109],draggableProgressBar)})
+</script>
+  </body>
+</html>
